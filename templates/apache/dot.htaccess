@@ -1,0 +1,100 @@
+
+# Enable etags.  Improve cachability of
+# most stuff.
+FileETag MTime
+
+# We no longer will use cookies.
+<IfModule mod_usertrack.c>
+CookieTracking off
+</IfModule>
+
+################################################################
+# Negotiation                                                  #
+################################################################
+
+Options +MultiViews
+LanguagePriority en-us en
+ForceLanguagePriority prefer fallback
+
+################################################################
+# Languages                                                    #
+################################################################
+
+[% .AddLanguage %]
+
+################################################################
+# file types                                                   #
+################################################################
+
+AddType "text/html;charset=UTF-8" .html
+AddType "text/javascript;charset=UTF-8" .js
+AddType "text/css;charset=UTF-8" .css
+AddType "text/plain;charset=UTF-8" .yaml
+RemoveType .gz
+AddEncoding x-gzip .gz
+
+#EOF
+
+################################################################
+# Hide private files                                           #
+################################################################
+
+<FilesMatch "private">
+order allow,deny
+deny from all
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+RewriteRule ^/isp/ /isp.html [R]
+RewriteEngine On
+
+# "Transparent Mirrors"  - those answering
+# to the name "test-ipv6.com" - need to redirect
+# the SSL certificate challenge, to the location
+# where we generate combination SSL certs containing
+# both the "test-ipv6.com" name and your mirror name.
+# if you're not running a transparent mirror, your site
+# should not be in this list.
+#
+# https://github.com/falling-sky/source/wiki/SSL-and-HTTP-2-plans
+#
+# This is the list of "transparent" mirrors 
+# that need SSL certificates for "test-ipv6.com".
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?testipv6\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?testv6\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv4\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?testipv4\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?testv4\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ds\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?testds\.com$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.[a-z]+\.vr\.org$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.comcast.net$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6-vm1\.comcast.net$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6-vm2\.comcast.net$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6-vm3\.comcast.net$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6-vm4\.comcast.net$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.zw\.liquidtelecom.net$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.ke\.liquidtelecom.net$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.arauc\.br$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.go6\.si [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.jp [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.null\.nu [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.roedu\.net [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.noroutetohost\.net [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.com\.au [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.ttk\.ru [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.tascom\.com\.br [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.usetelecom\.com\.br [NC,OR]
+RewriteCond %{HTTP_HOST} ^(.*\.)?test-ipv6\.alpinedc\.ch [NC]
+RewriteRule "^(.well-known/acme-.*)$" http://validation-server.test-ipv6.com/$1 [R,L]
+</IfModule>
+
+
+#####################################################################
+# Help with auditing remote mirrors to see which version of these   #
+# Apache config files are being used by creating an artificial HTTP #
+# redirect back to the main page                                    #
+#                                                                   #
+#####################################################################
+Redirect 307 /htrev/ /?htrev=[% .GitInfo.Version %]-[% .DirSignature %]
